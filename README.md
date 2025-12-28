@@ -1,33 +1,36 @@
+
 # 🏗️ Housing Price Prediction MLOps Pipeline
 
 [![Python](https://img.shields.io/badge/Python-3.13+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green.svg)](https://fastapi.tiangolo.com/)
-[![Ruff](https://img.shields.io/badge/Linter-Ruff-black.svg)](https://docs.astral.sh/ruff/)
-[![Test](https://img.shields.io/badge/Tests-Pytest-yellow.svg)](https://docs.pytest.org/)
+[![Docker](https://img.shields.io/badge/Docker-Enabled-blue.svg)](https://www.docker.com/)
+[![CI/CD](https://img.shields.io/badge/GitHub%20Actions-Active-yellow.svg)](https://github.com/features/actions)
 [![Manager](https://img.shields.io/badge/Manager-uv-purple.svg)](https://github.com/astral-sh/uv)
 
 ## 📋 Project Overview
 
 This project implements a robust, production-ready MLOps pipeline for predicting housing prices. It is built with a focus on **Structural Integrity**, ensuring reliability, type safety, and reproducibility over algorithmic complexity.
 
-The system consists of a Scikit-Learn inference engine served via a high-performance REST API (FastAPI), managed with modern Python tooling (`uv`).
+The system consists of a Scikit-Learn inference engine served via a high-performance REST API (FastAPI), containerized with **Docker**, and validated via a **CI/CD pipeline**.
 
 ### Key Features
 * **Modern Stack**: Built with `uv` for lightning-fast dependency management and `Ruff` for strict code quality.
 * **TDD First**: Developed using Test-Driven Development methodologies.
-* **Type Safety**: Full use of Python Type Hints and Pydantic V2 for strict data validation (Schemas).
-* **Reproducibility**: Automated training pipeline with artifact management (`.pkl`).
+* **Containerization**: Fully dockerized application using Multi-Stage Builds for optimized image size.
+* **CI/CD**: Automated testing pipeline via GitHub Actions.
 * **Resilience**: Synthetic data generation strategy implemented to bypass network constraints during development.
 
 ---
 
 ## 🏛️ Architecture
 
-The project follows a modular structure separating source code, tests, and data exploration:
+The project follows a modular structure separating source code, tests, ops config, and data exploration:
 
 ```text
 housing_price_pipeline/
-├── artifacts/           # serialized model storage (.pkl)
+├── .github/
+│   └── workflows/       # CI/CD Pipeline configuration (GitHub Actions)
+├── artifacts/           # Serialized model storage (.pkl)
 ├── notebooks/           # Jupyter notebooks for EDA and prototyping
 ├── src/
 │   └── housing/
@@ -35,6 +38,8 @@ housing_price_pipeline/
 │       ├── modeling.py  # Training pipeline & Data generation
 │       └── schemas.py   # Pydantic contracts (Input/Output)
 ├── tests/               # Pytest suite (Integration & Smoke tests)
+├── .dockerignore        # Docker build exclusion rules
+├── Dockerfile           # Multi-stage container definition
 ├── pyproject.toml       # Project configuration & Dependencies
 └── uv.lock              # Exact dependency versioning
 
@@ -53,17 +58,44 @@ cd housing_price_pipeline
 ```
 
 
-2. **Initialize Environment & Install Dependencies**
+2. **Initialize Environment**
 ```bash
 uv sync
 ```
+
+
+
 ---
 
-## 🚀 Usage
+## 🐳 Docker (Production)
+
+The application is containerized to ensure "Build once, run anywhere" capability.
+
+### 1. Build the Image
+
+We use a multi-stage build process to keep the final image lightweight.
+
+```bash
+docker build -t housing-api:v1 .
+```
+
+### 2. Run the Container
+
+Map the container's port 80 to your local machine (e.g., port 8000).
+
+```bash
+docker run -p 8000:80 housing-api:v1
+```
+
+Once running, the API is available at: `http://localhost:8000/docs`
+
+---
+
+## 🚀 Local Usage (Without Docker)
 
 ### 1. Train the Model (The Machinery)
 
-Before running the API, you must generate the model artifact. Due to network restrictions, this step currently generates synthetic data structurally identical to the California Housing dataset.
+Before running the API, you must generate the model artifact.
 
 ```bash
 uv run python src/housing/modeling.py
@@ -73,16 +105,24 @@ uv run python src/housing/modeling.py
 
 ### 2. Run the API (The Factory)
 
-Start the production server locally:
+Start the development server locally:
 
 ```bash
 uv run uvicorn src.housing.main:app --reload
 ```
 
-### 3. Access Documentation
+---
 
-Once running, navigate to the auto-generated Swagger UI:
-👉 **https://www.google.com/search?q=http://127.0.0.1:8000/docs**
+## 🤖 CI/CD (Automation)
+
+This project uses **GitHub Actions** for Continuous Integration.
+The pipeline is defined in `.github/workflows/ci.yml` and triggers automatically on `push` or `pull_request` to the main branch.
+
+**Pipeline Steps:**
+
+1. **Setup**: Installs `uv` and Python 3.13.
+2. **Training**: Executes the training script to verify model generation logic.
+3. **Testing**: Runs the full `pytest` suite to validate API endpoints and schemas.
 
 ---
 
@@ -122,6 +162,7 @@ uv run pytest -v
   "Latitude": 34.0,
   "Longitude": -118.0
 }
+
 ```
 
 ---
