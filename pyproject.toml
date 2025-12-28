@@ -34,3 +34,6 @@ select = ["E", "F", "I", "B"]
 
 [tool.ruff.format]
 quote-style = "double" # Estandariza comillas dobles
+[tool.pytest.ini_options]
+pythonpath = "."
+testpaths = ["tests"]
