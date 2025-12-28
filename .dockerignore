@@ -1,0 +1,14 @@
+# .dockerignore
+# Ignorar el entorno virtual local (el contenedor creará el suyo propio)
+.venv
+.git
+.github
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+tests
+notebooks
+# Ignoramos el README y Makefile, no hacen falta para que corra la APP
+README.md
+Makefile

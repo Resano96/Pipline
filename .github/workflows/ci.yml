@@ -1,0 +1,43 @@
+name: CI Pipeline (Housing MLOps)
+
+# 1. ¿Cuándo trabaja el robot?
+# Cada vez que hacemos push a la rama 'main' o abrimos un Pull Request
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+# 2. El trabajo a realizar
+jobs:
+  inspection:
+    name: Build & Test Inspection
+    runs-on: ubuntu-latest # Usamos un servidor Linux estándar
+
+    steps:
+      # A. Descargar el código del repositorio
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # B. Instalar 'uv' (nuestra herramienta mágica)
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      # C. Instalar Python 3.13 usando uv
+      - name: Set up Python
+        run: uv python install 3.13
+
+      # D. Instalar dependencias (mismo entorno que en tu PC)
+      - name: Install Dependencies
+        run: uv sync --all-extras --dev
+
+      # E. ENTRENAMIENTO (Generar el .pkl)
+      # Como el archivo .pkl suele ser pesado, a veces no se sube a Git.
+      # Aquí lo regeneramos "in situ" para el test.
+      - name: Train Model (Generate Artifacts)
+        run: uv run python src/housing/modeling.py
+
+      # F. INSPECCIÓN (Tests)
+      # Ejecutamos pytest. Si esto falla, el CI se pone rojo.
+      - name: Run Tests
+        run: uv run pytest -v
