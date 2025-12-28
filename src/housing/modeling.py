@@ -13,25 +13,23 @@ ARTIFACTS_DIR = BASE_DIR / "artifacts"
 
 def load_data():
     """
-    Genera datos sintéticos porque la cantera oficial tiene bloqueo de red.
-    Simula el dataset California Housing.
+    Carga datos desde data/housing.csv
     """
-    print("🏗️  Generando datos sintéticos en sitio...")
+    csv_path = BASE_DIR / "data" / "housing.csv"
     
-    # Mismas columnas que el original para mantener la estructura
-    cols = [
-        "MedInc", "HouseAge", "AveRooms", "AveBedrms", 
-        "Population", "AveOccup", "Latitude", "Longitude", "MedHouseVal"
-    ]
+    if not csv_path.exists():
+        # Fallback de seguridad por si borras el archivo sin querer
+        print(f"⚠️ No encuentro {csv_path}. Usando modo sintético de emergencia.")
+        # ... aquí podrías poner el código de generación aleatoria si quisieras ...
+        raise FileNotFoundError(f"❌ Falta el archivo {csv_path}")
+
+    print(f"🏗️  Leyendo CSV real: {csv_path}")
+    df = pd.read_csv(csv_path)
     
-    # Generamos 1000 filas aleatorias
-    np.random.seed(42)
-    data = np.random.rand(1000, 9)
-    df = pd.DataFrame(data, columns=cols)
+    # Solo por seguridad, borramos filas vacías si las hubiera
+    df = df.dropna()
     
-    # Ajustes de escala para realismo
-    df["MedHouseVal"] = df["MedHouseVal"] * 5
-    
+    print(f"✅ Datos cargados: {len(df)} registros.")
     return df
 
 def train_model():
